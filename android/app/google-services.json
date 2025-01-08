@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "515560094088",
+    "project_id": "savily-4e2b5",
+    "storage_bucket": "savily-4e2b5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:515560094088:android:101b061400ff521700a23d",
+        "android_client_info": {
+          "package_name": "com.savily.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "515560094088-1mtj9pca323fjsktnvsd8l6qq4p7vsqc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7dv0kGtIjcTQhS3qN8xglgGjw90bePuo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "515560094088-1mtj9pca323fjsktnvsd8l6qq4p7vsqc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "515560094088-8b4h39ojcqpcc6obc17d6p9flni9s8rc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.savily"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
