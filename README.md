@@ -1,5 +1,6 @@
-Saveily
-Effortlessly Manage Your Family's Finances
+# Saveily
+
+## Effortlessly Manage Your Family's Finances
 
 Saveily is a family expense tracker designed to simplify financial management for households. Whether you’re keeping track of daily expenses or analyzing income trends, Saveily provides a user-friendly platform to monitor and optimize your family’s budget.
 
