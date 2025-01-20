@@ -4,12 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:saveily_2/functions/functions.dart';
 import 'package:saveily_2/theme/color.dart';
 
-void main() {
-  runApp(MaterialApp(
-    home: UserListScreen(),
-    debugShowCheckedModeBanner: false,
-  ));
-}
+
 
 class UserListScreen extends StatefulWidget {
   const UserListScreen({super.key});
@@ -149,74 +144,103 @@ class _UserListScreenState extends State<UserListScreen> {
         backgroundColor: bgColor,
         title: const Text('Account Members'),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0), 
+        child: Column(
+          children: [
+           // Conditionally show the search field
+          if (!isChildAccount)
+            TextField(
               controller: _searchController,
-              enabled: !isChildAccount,  // Disable TextField if child account
+              enabled: !isChildAccount,
               decoration: InputDecoration(
-                hintText: isChildAccount 
-                    ? 'Search disabled for child accounts' 
+                hintText: isChildAccount
+                    ? 'Search disabled for child accounts'
                     : 'Search users by email...',
                 prefixIcon: Icon(
                   Icons.search,
-                  color: isChildAccount ? Colors.grey : null,  // Grey out icon if disabled
+                  color: isChildAccount ? Colors.grey : null,
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
                 filled: true,
-                fillColor: isChildAccount ? Colors.grey[300] : Colors.grey[100],  // Darker background if disabled
+                fillColor: isChildAccount ? Colors.grey[300] : Colors.grey[100],
               ),
               onChanged: (value) => fetchUsers(),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ListTile(
-                  title: const Text('Admin Email'),
-                  subtitle: Text(adminEmail),
-                ),
-                const SizedBox(height: 8),
-                const Text('User Emails:', style: TextStyle(fontWeight: FontWeight.bold)),
-                ...userEmails.map((email) => ListTile(
-                      title: Text(email),
-                    )),
-                const SizedBox(height: 8),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _filteredUsers.length,
-              itemBuilder: (context, index) {
-                final user = _filteredUsers[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 8.0,
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView(
+                children: [
+                  Card(
+                elevation: 4,
+margin: const EdgeInsets.only(bottom: 16.0),
+child: Container(
+  decoration: BoxDecoration(
+    gradient: LinearGradient(
+      colors: [primaryColor, Colors.blue], // Choose your gradient colors here
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    borderRadius: BorderRadius.circular(10), // Optional: for rounded corners
+  ),
+  child: ListTile(
+    leading: const Icon(Icons.admin_panel_settings, color: Colors.white),
+    title: const Text('Admin Email', style: TextStyle(color: Colors.white)),
+    subtitle: Text(adminEmail, style: const TextStyle(color: Colors.white)),
+  ),
+),
                   ),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: AssetImage(user['avatar'] ?? 'lib/assets/defaultpfp.png'),
+                  const SizedBox(height: 8),
+                  const Text('User Emails:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ...userEmails.map((email) => Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: ListTile(
+                          leading: const Icon(Icons.person, color: Colors.green),
+                          title: Text(email, style: const TextStyle(color: Colors.black87)),
+                        ),
+                      )),
+                  if (_filteredUsers.isNotEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 16.0),
+                      child: Text(
+                        'Search Results',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                     ),
-                    title: Text(user['firstName'] ?? 'Unknown'),
-                    subtitle: Text(user['email'] ?? 'No Email'),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed: isChildAccount ? null : () => _addUserToTracking(user),  // Disable button if child account
-                    ),
-                  ),
-                );
-              },
+                  ..._filteredUsers.map((user) => Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Container(
+                           decoration: BoxDecoration(
+    gradient: LinearGradient(
+      colors: [primaryColor, Colors.blue], // Choose your gradient colors here
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    borderRadius: BorderRadius.circular(10), // Optional: for rounded corners
+  ),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: AssetImage(
+                                  user['avatar'] ?? 'lib/assets/defaultpfp.png'),
+                            ),
+                            
+                            title: Text(user['firstName'] ?? 'Unknown',style: TextStyle(color: Colors.white),),
+                            subtitle: Text(user['email'] ?? 'No Email',style: TextStyle(color: Colors.white),),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.add),
+                              onPressed: isChildAccount ? null : () => _addUserToTracking(user),
+                            ),
+                          ),
+                        ),
+                      )),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:saveily_2/bloc/account_bloc.dart';
 import 'dart:io';
+import 'package:saveily_2/bloc/account_bloc.dart';
 import 'package:saveily_2/screens/auth/welcomePage.dart';
 import 'package:saveily_2/theme/color.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
@@ -14,10 +15,21 @@ class UserProfile extends StatefulWidget {
   State<UserProfile> createState() => _UserProfileState();
 }
 
+
 class _UserProfileState extends State<UserProfile> {
+
+    void didChangeDependencies() {
+    super.didChangeDependencies();
+   
+    context.read<AccountBloc>().add(LoadAccount());
+  } 
+
+
   File? _imageFile;
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
+  String initialFirstName = '';
+  String initialLastName = '';
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
@@ -60,7 +72,7 @@ class _UserProfileState extends State<UserProfile> {
                 Navigator.pop(context); // Close dialog
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => WelcomePage()), // Navigate to WelcomePage
+                  MaterialPageRoute(builder: (context) => const WelcomePage()), // Navigate to WelcomePage
                 );
               },
               child: const Text('Logout'),
@@ -70,6 +82,51 @@ class _UserProfileState extends State<UserProfile> {
       },
     );
   }
+Future<void> _saveChanges(String userEmail) async {
+  final firstName = _firstNameController.text.trim();
+  final lastName = _lastNameController.text.trim();
+
+  // Check if any of the fields were changed
+  if (firstName != initialFirstName || lastName != initialLastName) {
+    // Display success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Center(child: Text('Changes saved successfully!'
+        ,style: TextStyle(
+          color: Colors.black
+        ),)),backgroundColor: bgColor,),
+    );
+
+    try {
+      // Query the Firestore collection 'users' to find the document with the matching email
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: userEmail)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // If the document exists, update it
+        final userDoc = querySnapshot.docs.first; // Get the first document (assuming emails are unique)
+        
+        await userDoc.reference.update({
+          'firstName': firstName,
+          'lastName': lastName,
+        });
+      } else {
+        // Document with the given email not found
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User document not found')),
+        );
+      }
+    } catch (e) {
+      // Catch any errors
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error saving changes')),
+      );
+    }
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -93,16 +150,18 @@ class _UserProfileState extends State<UserProfile> {
           if (state is AccountError) {
             return Center(child: Text('Error: ${state.error}'));
           }
-          if (state is AccountLoaded) {
-            final userData = state.user;
-            final email = userData['email'] ?? 'Unknown Email';
-            final imageUrl = userData['imageUrl']; // Assuming the URL of the image is in this field
+      if (state is AccountLoaded) {
+  final userData = state.user;
+  final email = userData['email'] ?? '';
+  final imageUrl = userData['imageUrl'];
 
-            // Update the text controllers with fetched data
-            _firstNameController.text = userData['firstName'] ?? '';
-            _lastNameController.text = userData['lastName'] ?? '';
+  // Initialize names with null checks
+  initialFirstName = userData['firstName'] ?? '';
+  initialLastName = userData['lastName'] ?? '';
 
-            return SingleChildScrollView(
+  _firstNameController.text = initialFirstName;
+  _lastNameController.text = initialLastName;
+  return SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -189,12 +248,7 @@ class _UserProfileState extends State<UserProfile> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                     ),
-                    onPressed: () {
-                      // Implement save changes logic
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Changes saved successfully')),
-                      );
-                    },
+                    onPressed: () => _saveChanges(email),
                     child: const Text(
                       'Save Changes',
                       style: TextStyle(color: Colors.white),

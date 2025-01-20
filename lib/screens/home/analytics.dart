@@ -1,17 +1,12 @@
+import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';  // Import fl_chart
+import 'package:fl_chart/fl_chart.dart'; // Import fl_chart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:saveily_2/bloc/account_bloc.dart';
 import 'package:saveily_2/screens/home/homepage.dart';
 import 'package:saveily_2/theme/color.dart';
 
-void main() {
-  runApp(const MaterialApp(
-    home: Analytics(),
-    debugShowCheckedModeBanner: false,
-  ));
-}
 
 class Analytics extends StatefulWidget {
   const Analytics({super.key});
@@ -21,15 +16,43 @@ class Analytics extends StatefulWidget {
 }
 
 class _AnalyticsState extends State<Analytics> {
-  int currentIndex = 1; // Start at Analytics page (Stats)
+  Map<String, Color> categoryColorMap = {};
 
-   @override
+  int currentIndex = 1; // Start at Analytics page (Stats)
+  List<Color> availableColors = [
+    Colors.green,
+    Colors.blue,
+    Colors.orange,
+    Colors.purple,
+    Colors.red,
+    Colors.yellow,
+    Colors.cyan,
+    Colors.indigo,
+  ];
+  List<Color> usedColors = [];
+
+  Color getRandomColor() {
+    final random = Random();
+    List<Color> unusedColors = availableColors
+        .where((color) => !usedColors.contains(color))
+        .toList();
+
+    if (unusedColors.isEmpty) {
+      usedColors.clear(); // Reset if all colors are used
+      unusedColors = availableColors;
+    }
+
+    Color randomColor = unusedColors[random.nextInt(unusedColors.length)];
+    usedColors.add(randomColor);
+    return randomColor;
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Trigger loading account data each time this page is visited
     context.read<AccountBloc>().add(LoadAccount());
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -37,12 +60,14 @@ class _AnalyticsState extends State<Analytics> {
       backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: bgColor,
-        automaticallyImplyLeading: false, 
+        automaticallyImplyLeading: false,
         centerTitle: true,
-        title: const Text('Analytics', 
-        style: TextStyle(
-          color: TextColor,
-        )),
+        title: const Text(
+          'Analytics',
+          style: TextStyle(
+            color: TextColor,
+          ),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -53,22 +78,27 @@ class _AnalyticsState extends State<Analytics> {
                 return Center(child: Text(state.error));
               } else if (state is AccountLoaded) {
                 // Access the expense data from the state
-                final List<Map<String, dynamic>> expenses = List<Map<String, dynamic>>.from(state.account['expenses'] ?? []);
-                
+                final List<Map<String, dynamic>> expenses =
+                    List<Map<String, dynamic>>.from(state.account['expenses'] ?? []);
+
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
                         'Expense Distribution',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: TextColor,
+                        ),
                       ),
                       const SizedBox(height: 20),
                       // Pie chart with increased radius
                       Container(
-                        width: MediaQuery.of(context).size.width,  // Full width of the screen
-                        height: MediaQuery.of(context).size.width * 0.7, // Adjusted height to make the chart larger
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.width * 0.7,
                         decoration: BoxDecoration(
                           color: bgColor,
                           borderRadius: BorderRadius.circular(12),
@@ -79,33 +109,42 @@ class _AnalyticsState extends State<Analytics> {
                             PieChartData(
                               sections: _getPieChartSections(expenses),
                               borderData: FlBorderData(show: false),
-                              sectionsSpace: 0,  // No space between sections
-                              centerSpaceRadius: 0,  // Remove the inner circle
+                              sectionsSpace: 0, // No space between sections
+                              centerSpaceRadius: 0, // Remove the inner circle
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 20),
                       // Transactions List (Optional, if you want to show a list below chart)
-                      SizedBox(
-                        height: 200,  // Set a fixed height for the ListView
-                        child: ListView.builder(
-                          itemCount: expenses.length,
-                          itemBuilder: (context, index) {
-                            final item = expenses[index];
-                            return Card(
-                              child: ListTile(
-                                tileColor: Colors.white,
-                                title: Text(item['category']),
-                                trailing: Text(
-                                  '\$${_parseExpense(item['expense']).toStringAsFixed(2)}', // Convert string to double
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                   // Transactions List
+SizedBox(
+  height: 200, // Set a fixed height for the ListView
+  child: ListView.builder(
+    itemCount: expenses.length,
+    itemBuilder: (context, index) {
+      final item = expenses[index];
+      final category = item['category'];
+      final expenseAmount = _parseExpense(item['expense']);
+      final categoryColor = _getCategoryColor(category);
+
+      return Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: ListTile(
+          tileColor: categoryColor.withOpacity(0.1), // Set a lighter color for the background
+          title: Text(item['category']),
+          trailing: Text(
+            '\$${expenseAmount.toStringAsFixed(2)}',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      );
+    },
+  ),
+)
+
                     ],
                   ),
                 );
@@ -136,60 +175,60 @@ class _AnalyticsState extends State<Analytics> {
     );
   }
 
-  
   // Convert expense data to pie chart sections
-List<PieChartSectionData> _getPieChartSections(List<Map<String, dynamic>> expenses) {
-  // Step 1: Group expenses by category
-  Map<String, double> categorySums = {};
+  List<PieChartSectionData> _getPieChartSections(List<Map<String, dynamic>> expenses) {
+    // Step 1: Group expenses by category
+    Map<String, double> categorySums = {};
 
-  for (var expense in expenses) {
-    final category = expense['category'] ?? 'Unknown';  // Default category is 'Unknown'
-    final amount = _parseExpense(expense['expense']); // Convert expense to double
+    for (var expense in expenses) {
+      final category = expense['category'] ?? 'Unknown'; // Default category is 'Unknown'
+      final amount = _parseExpense(expense['expense']); // Convert expense to double
 
-    // Add to the category sum
-    if (categorySums.containsKey(category)) {
-      categorySums[category] = categorySums[category]! + amount;
-    } else {
-      categorySums[category] = amount;
+      // Add to the category sum
+      if (categorySums.containsKey(category)) {
+        categorySums[category] = categorySums[category]! + amount;
+      } else {
+        categorySums[category] = amount;
+      }
     }
+
+    // Step 2: Sort categories by their total sum in descending order
+    final sortedCategories = categorySums.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    // Step 3: Convert to PieChartSectionData
+    return sortedCategories.map((entry) {
+      final category = entry.key;
+      final value = entry.value;
+
+      return PieChartSectionData(
+        value: value,
+        title: '',
+        color: _getCategoryColor(category),
+        radius: 100, // Adjust radius to control the size
+        titleStyle: const TextStyle(
+          fontSize: 0, // Remove title text
+        ),
+      );
+    }).toList();
   }
 
-  // Step 2: Sort categories by their total sum in descending order
-  final sortedCategories = categorySums.entries.toList()
-    ..sort((a, b) => b.value.compareTo(a.value));
+  // Parse string expense to double, defaulting to 0.0 if invalid
+  double _parseExpense(String? expense) {
+    if (expense == null || expense.isEmpty) {
+      return 0.0; // Default to 0.0 if expense is null or empty
+    }
 
-  // Step 3: Convert to PieChartSectionData
-  return sortedCategories.map((entry) {
-    final category = entry.key;
-    final value = entry.value;
+    // Try parsing the string to a double
+    final parsedExpense = double.tryParse(expense);
 
-    return PieChartSectionData(
-      value: value,
-      title: '',
-      color: _getCategoryColor(category),
-      radius: 100, // Adjust radius to control the size
-      titleStyle: const TextStyle(
-        fontSize: 0, // Remove title text
-      ),
-    );
-  }).toList();
-}
-
-// Parse string expense to double, defaulting to 0.0 if invalid
-double _parseExpense(String? expense) {
-  if (expense == null || expense.isEmpty) {
-    return 0.0; // Default to 0.0 if expense is null or empty
+    // Return the parsed value or default to 0.0 if parsing fails
+    return parsedExpense ?? 0.0;
   }
 
-  // Try parsing the string to a double
-  final parsedExpense = double.tryParse(expense);
 
-  // Return the parsed value or default to 0.0 if parsing fails
-  return parsedExpense ?? 0.0;
-}
-
-// Get color for each category
 Color _getCategoryColor(String category) {
+  // Predefined categories
   switch (category) {
     case 'Groceries':
       return Colors.green;
@@ -202,10 +241,22 @@ Color _getCategoryColor(String category) {
     case 'Bills':
       return Colors.red;
     default:
-      return Colors.grey;
+      // Check if the category already has an assigned color
+      if (categoryColorMap.containsKey(category)) {
+        return categoryColorMap[category]!;
+      }
+
+      // Assign a new random color if it's a new category
+      Color newColor = getRandomColor();
+      
+      // Store the new category and its assigned color
+      categoryColorMap[category] = newColor;
+
+      return newColor;
   }
 }
 }
+
 
 class CustomBottomNavigationBar extends StatelessWidget {
   final int currentIndex;

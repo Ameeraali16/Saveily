@@ -6,14 +6,10 @@ import 'package:saveily_2/screens/auth/welcomePage.dart';
 import 'package:saveily_2/screens/home/homepage.dart';
 import 'package:saveily_2/theme/color.dart';
 import 'package:saveily_2/theme/image_flipper.dart';
+import 'package:saveily_2/widgets/passwordFields.dart';
 import 'package:saveily_2/widgets/policyBottomSheet.dart';
 
-void main() {
-  runApp(const MaterialApp(
-    home: Login(),
-    debugShowCheckedModeBanner: false,
-  ));
-}
+
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -26,7 +22,7 @@ class _LoginState extends State<Login> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-   String _message = '';
+
    String _formError = '';
 
   @override
@@ -39,7 +35,7 @@ class _LoginState extends State<Login> {
 
   bool _validateInputs() {
     setState(() {
-      _formError = ''; // Reset error message
+      _formError = ''; 
     });
 
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
@@ -66,34 +62,31 @@ class _LoginState extends State<Login> {
 
   try {
     // Authenticate with Firebase
-    final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
-    );
+    
 
     // Get the current user
     final user = FirebaseAuth.instance.currentUser;
     print('User signed in: ${user?.uid}'); // Debugging
 
     if (user != null) {
-      // Check if the user exists in Firestore
+    
       final userDoc = await FirebaseFirestore.instance
-          .collection('users') // Replace with your Firestore collection name
-          .doc(user.uid) // Use UID as the document ID
+          .collection('users') 
+          .doc(user.uid) 
           .get();
 
       print('User document exists: ${userDoc.exists}'); // Debugging
 
       if (userDoc.exists) {
-        // Navigate to the home screen
-        Navigator.pop(context); // Close the loading dialog
+    
+        Navigator.pop(context);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => MainScreen()),
         );
       } else {
-        // Navigate to the profile creation screen
-        Navigator.pop(context); // Close the loading dialog
+      
+        Navigator.pop(context); 
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const FormScreen()),
@@ -104,10 +97,10 @@ class _LoginState extends State<Login> {
       setState(() {
         _formError = 'Failed to retrieve user information.';
       });
-      Navigator.pop(context); // Close the loading dialog
+      Navigator.pop(context); 
     }
   } on FirebaseAuthException catch (e) {
-    Navigator.pop(context); // Close the loading dialog
+    Navigator.pop(context); 
 
     String errorMessage = 'An error occurred. Please try again.';
     if (e.code == 'user-not-found') {
@@ -118,13 +111,13 @@ class _LoginState extends State<Login> {
     setState(() {
       _formError = errorMessage;
     });
-    print('FirebaseAuthException: ${e.message}'); // Debugging
+    print('FirebaseAuthException: ${e.message}'); 
   } catch (e) {
-    Navigator.pop(context); // Close the loading dialog
+    Navigator.pop(context);
     setState(() {
       _formError = 'An unexpected error occurred: $e';
     });
-    print('Unexpected error: $e'); // Debugging
+    print('Unexpected error: $e'); 
   }
 }
 
@@ -158,11 +151,11 @@ class _LoginState extends State<Login> {
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: _emailController.text);
       setState(() {
-        _message = 'Password reset email sent! Please check your inbox.';
+      _formError = 'Password reset email sent! Please check your inbox.';
       });
     } catch (e) {
       setState(() {
-        _message = 'Error: $e';
+       _formError = 'Error: $e';
       });
     }
   }
@@ -243,16 +236,10 @@ class _LoginState extends State<Login> {
                     SizedBox(
                       width: 290,
                       height: 37,
-                      child: TextField(
-                        controller: _passwordController,
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                      ),
+                       child: PasswordFieldWithEyeToggle(controller: _passwordController, 
+                       labelText: 'Password')
+                   
+
                     ),
                     SizedBox(height: 12),
                     Row(

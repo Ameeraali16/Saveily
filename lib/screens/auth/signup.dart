@@ -1,22 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:saveily_2/screens/auth/form.dart';
 import 'package:saveily_2/screens/auth/welcomePage.dart';
-
 import 'package:saveily_2/theme/color.dart';
-
 import 'package:saveily_2/theme/image_flipper.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:saveily_2/widgets/passwordFields.dart';
 import 'package:saveily_2/widgets/policyBottomSheet.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(const MaterialApp(
-    home: Signup(),
-    debugShowCheckedModeBanner: false,
-  ));
-}
 
 class Signup extends StatefulWidget {
   const Signup({super.key});
@@ -43,33 +32,41 @@ class _SignupState extends State<Signup> {
   }
 
   void _validateAndSignUp() async {
+  setState(() {
+    _formError = '';  // Clear previous error messages
+  });
+
+  // Check if all fields are filled
+  if (_emailController.text.isEmpty ||
+      _passwordController.text.isEmpty ||
+      _confirmPasswordController.text.isEmpty ||
+      !_termsAccepted) {
     setState(() {
-      _passwordError = '';
-      _formError = '';
+      _formError = 'Please fill all fields and accept terms.';
     });
-
-    // Check if all fields are filled
-    if (_emailController.text.isEmpty ||
-        _passwordController.text.isEmpty ||
-        _confirmPasswordController.text.isEmpty ||
-        !_termsAccepted) {
-      setState(() {
-        _formError = 'Please fill all fields and accept terms.';
-      });
-      return;
-    }
-
-    // Check if passwords match
-    if (_passwordController.text != _confirmPasswordController.text) {
-      setState(() {
-        _passwordError = 'Passwords do not match.';
-      });
-      return;
-    }
-
-    // Proceed to Firebase signup
-    await _signUpWithFirebase();
+    return;
   }
+
+  // Check if email format is valid
+  final emailRegex = RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
+  if (!emailRegex.hasMatch(_emailController.text)) {
+    setState(() {
+      _formError = 'Please enter a valid email address.';
+    });
+    return;
+  }
+
+  // Check if passwords match
+  if (_passwordController.text != _confirmPasswordController.text) {
+    setState(() {
+      _formError = 'Passwords do not match.';
+    });
+    return;
+  }
+
+  // Proceed to Firebase signup
+  await _signUpWithFirebase();
+}
 
   Future<void> _signUpWithFirebase() async {
     // Show loading circle
@@ -95,26 +92,25 @@ class _SignupState extends State<Signup> {
     } on FirebaseAuthException catch (e) {
       Navigator.pop(context); // Close loading circle
 
-      String errorMessage;
+     
       if (e.code == 'weak-password') {
-        errorMessage = 'The password provided is too weak.';
+        _formError = 'The password provided is too weak.';
       } else if (e.code == 'email-already-in-use') {
-        errorMessage = 'The account already exists for that email.';
+        _formError = 'The account already exists for that email.';
       } else if (e.code == 'invalid-email') {
-        errorMessage = 'The email address is not valid.';
+        _formError = 'The email address is not valid.';
       } else {
-        errorMessage = 'An unexpected error occurred: ${e.message}';
+       _formError = 'An unexpected error occurred: ${e.message}';
       }
+ setState(() {
+      _formError = _formError; // Update form error state
+    });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
+     
     } catch (e) {
       Navigator.pop(context); // Close loading circle
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred. Please try again.')),
-      );
+     _formError = 'An error occurred. Please try again.';
     }
   }
 
@@ -122,21 +118,27 @@ class _SignupState extends State<Signup> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bgColor,
-      
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-                Row( mainAxisAlignment: MainAxisAlignment.start,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   IconButton(
-                            onPressed: () {
-                              Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => WelcomePage()));
-                            },
-                            icon: const Icon(Icons.arrow_back, color: Colors.black, size: 18,),
-                          ),
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => WelcomePage()));
+                    },
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.black,
+                      size: 18,
+                    ),
+                  ),
                 ],
               ),
               ImageFlipper(),
@@ -191,38 +193,25 @@ class _SignupState extends State<Signup> {
                     ),
                     const SizedBox(height: 20),
                     SizedBox(
-                      width: 290,
-                      height: 37,
-                      child: TextField(
-                        controller: _passwordController,
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
+                        width: 290,
+                        height: 37,
+                        child: PasswordFieldWithEyeToggle(
+                            controller: _passwordController,
+                            labelText: 'Password')
+                      
                         ),
-                      ),
-                    ),
                     const SizedBox(height: 20),
                     SizedBox(
-                      width: 290,
-                      height: 37,
-                      child: TextField(
-                        controller: _confirmPasswordController,
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          labelText: 'Confirm Password',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          errorText:
-                              _passwordError.isNotEmpty ? _passwordError : null,
+                        width: 290,
+                        height: 37,
+                        child: PasswordFieldWithEyeToggle(
+                            controller: _confirmPasswordController,
+                            labelText: 'Confirm Password')
+                      
                         ),
-                      ),
+                    SizedBox(
+                      height: 20,
                     ),
-                         SizedBox(height: 20,),
-                
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -234,7 +223,6 @@ class _SignupState extends State<Signup> {
                             });
                           },
                         ),
-                        
                         const Text(
                           "I have read terms and conditions",
                           style: TextStyle(
@@ -245,7 +233,9 @@ class _SignupState extends State<Signup> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 20,),
+                    SizedBox(
+                      height: 20,
+                    ),
                     ElevatedButton(
                       onPressed: _validateAndSignUp,
                       style: ElevatedButton.styleFrom(
@@ -267,21 +257,21 @@ class _SignupState extends State<Signup> {
                         ),
                       ),
                     ),
-                    if (_formError.isNotEmpty)
-                       const SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: Text(
-                          _formError,
-                          style:
-                              const TextStyle(color: Colors.red, fontSize: 12),
-                        ),
+                    if (_formError.isNotEmpty) const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Text(
+                        _formError,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
                       ),
+                    ),
                   ],
                 ),
               ),
-                SizedBox(height: 29,),
-             const BottomLinks(),
+              SizedBox(
+                height: 29,
+              ),
+              const BottomLinks(),
             ],
           ),
         ),

@@ -6,13 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:saveily_2/screens/home/homepage.dart';
 import 'package:saveily_2/theme/color.dart';
 
-void main() {
-  runApp(const MaterialApp(
-    home: Stepperform(),
-    debugShowCheckedModeBanner: false,
-  ));
-}
-
 class Stepperform extends StatefulWidget {
   const Stepperform({super.key});
 
@@ -21,7 +14,7 @@ class Stepperform extends StatefulWidget {
 }
 
 class _StepperformState extends State<Stepperform> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   int _currentStep = 0;
@@ -144,7 +137,7 @@ class _StepperformState extends State<Stepperform> {
     // After successful tracking information saving, navigate to MainScreen
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => MainScreen()),
+      MaterialPageRoute(builder: (context) => const MainScreen()),
     );
   } catch (e) {
     print('Error in finishSetup: $e');
@@ -182,15 +175,18 @@ class _StepperformState extends State<Stepperform> {
         preferredSize: const Size.fromHeight(60),
         child: AppBar(
           backgroundColor: Colors.white,
-          title: Padding(
-            padding: const EdgeInsets.only(top: 20),
-            child: const Text(
-              "Let's set up your tracking account..",
-              style: TextStyle(
-                fontSize: 30,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w900,
-                color: Colors.black,
+          title: const Padding(
+            padding: EdgeInsets.only(top: 20),
+            child: FittedBox(
+               fit: BoxFit.scaleDown,
+              child: Text(
+                "Let's set up your tracking account..",
+                style: TextStyle(
+                  fontSize: 30,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w900,
+                  color: Colors.black,
+                ),
               ),
             ),
           ),
@@ -237,7 +233,7 @@ class _StepperformState extends State<Stepperform> {
                           content: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              SizedBox(
+                              const SizedBox(
                                 height: 20,
                               ),
                               const Text(
@@ -249,10 +245,10 @@ class _StepperformState extends State<Stepperform> {
                                   color: Colors.black,
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 40,
                               ),
-                              Row(
+                            Column(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
@@ -277,34 +273,34 @@ class _StepperformState extends State<Stepperform> {
                                     ),
                                   ),
                                   // Currency label and dropdown
-                                  const Text("Currency:"),
-                                  SizedBox(
-                                    width: 80, // Adjust width to ensure it fits
-                                    height: 37,
-                                    child: DropdownButtonFormField<String>(
-                                      value: selectedCurrency,
-                                      onChanged: (String? newValue) {
-                                        setState(() {
-                                          selectedCurrency = newValue!;
-                                        });
-                                      },
-                                      items: currencies.map((String currency) {
-                                        return DropdownMenuItem<String>(
-                                          value: currency,
-                                          child: Text(
-                                            currency,
-                                            style: TextStyle(fontSize: 12),
-                                          ),
-                                        );
-                                      }).toList(),
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(15),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                  // const Text("Currency:"),
+                                  // SizedBox(
+                                  //   width: 80, // Adjust width to ensure it fits
+                                  //   height: 37,
+                                  //   child: DropdownButtonFormField<String>(
+                                  //     value: selectedCurrency,
+                                  //     onChanged: (String? newValue) {
+                                  //       setState(() {
+                                  //         selectedCurrency = newValue!;
+                                  //       });
+                                  //     },
+                                  //     items: currencies.map((String currency) {
+                                  //       return DropdownMenuItem<String>(
+                                  //         value: currency,
+                                  //         child: Text(
+                                  //           currency,
+                                  //           style: const TextStyle(fontSize: 12),
+                                  //         ),
+                                  //       );
+                                  //     }).toList(),
+                                  //     decoration: InputDecoration(
+                                  //       border: OutlineInputBorder(
+                                  //         borderRadius:
+                                  //             BorderRadius.circular(15),
+                                  //       ),
+                                  //     ),
+                                  //   ),
+                                  // ),
                                 ],
                               ),
                               if (incomeError != null)
@@ -329,7 +325,7 @@ class _StepperformState extends State<Stepperform> {
                           content: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              SizedBox(
+                              const SizedBox(
                                 height: 20,
                               ),
                               const Text(
@@ -341,10 +337,10 @@ class _StepperformState extends State<Stepperform> {
                                   color: Colors.black,
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 40,
                               ),
-                              Row(
+                              Column(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
@@ -360,7 +356,7 @@ class _StepperformState extends State<Stepperform> {
                                       ],
                                       keyboardType: TextInputType.number,
                                       decoration: InputDecoration(
-                                        labelText: 'Saving Goal',
+                                      //  labelText: 'Saving Goal',
                                         border: OutlineInputBorder(
                                           borderRadius:
                                               BorderRadius.circular(15),
@@ -369,34 +365,34 @@ class _StepperformState extends State<Stepperform> {
                                     ),
                                   ),
                                   // Currency label and dropdown
-                                  const Text("Currency:"),
-                                  SizedBox(
-                                    width: 80, // Adjust width to ensure it fits
-                                    height: 37,
-                                    child: DropdownButtonFormField<String>(
-                                      value: selectedCurrency,
-                                      onChanged: (String? newValue) {
-                                        setState(() {
-                                          selectedCurrency = newValue!;
-                                        });
-                                      },
-                                      items: currencies.map((String currency) {
-                                        return DropdownMenuItem<String>(
-                                          value: currency,
-                                          child: Text(
-                                            currency,
-                                            style: TextStyle(fontSize: 12),
-                                          ),
-                                        );
-                                      }).toList(),
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(15),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                  // const Text("Currency:"),
+                                  // SizedBox(
+                                  //   width: 80, // Adjust width to ensure it fits
+                                  //   height: 37,
+                                  //   child: DropdownButtonFormField<String>(
+                                  //     value: selectedCurrency,
+                                  //     onChanged: (String? newValue) {
+                                  //       setState(() {
+                                  //         selectedCurrency = newValue!;
+                                  //       });
+                                  //     },
+                                  //     items: currencies.map((String currency) {
+                                  //       return DropdownMenuItem<String>(
+                                  //         value: currency,
+                                  //         child: Text(
+                                  //           currency,
+                                  //           style: const TextStyle(fontSize: 12),
+                                  //         ),
+                                  //       );
+                                  //     }).toList(),
+                                  //     decoration: InputDecoration(
+                                  //       border: OutlineInputBorder(
+                                  //         borderRadius:
+                                  //             BorderRadius.circular(15),
+                                  //       ),
+                                  //     ),
+                                  //   ),
+                                  // ),
                                 ],
                               ),
                               if (budgetError != null)
@@ -422,8 +418,8 @@ class _StepperformState extends State<Stepperform> {
                           content: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              SizedBox(height: 20),
-                              Text(
+                              const SizedBox(height: 20),
+                              const Text(
                                 'Search by email to add people',
                                 style: TextStyle(
                                   fontSize: 25,
@@ -432,7 +428,7 @@ class _StepperformState extends State<Stepperform> {
                                   color: Colors.black,
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 40,
                               ),
                               SizedBox(
@@ -477,7 +473,7 @@ class _StepperformState extends State<Stepperform> {
                   }).toList(),
 
                   
-                              SizedBox(
+                              const SizedBox(
                                 height: 20,
                               ),
                               SwitchListTile(
@@ -528,36 +524,36 @@ class _StepperformState extends State<Stepperform> {
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            SizedBox(
+                            const SizedBox(
                               height: 90,
                             ),
                             // Custom Cancel button (only show on steps 2 and above)
                             if (_currentStep > 0)
                               ElevatedButton(
                                 onPressed: details.onStepCancel,
-                                child: const Text(
-                                  'Back',
-                                  style: TextStyle(color: Colors.black),
-                                ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
+                                child: const Text(
+                                  'Back',
+                                  style: TextStyle(color: Colors.black),
+                                ),
                               ),
                             // Custom Continue button
                             ElevatedButton(
                               onPressed: details.onStepContinue,
-                              child: Text(
-                                _currentStep == 2 ? 'Finish' : 'Next',
-                                style: TextStyle(color: primaryColor),
-                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
+                              ),
+                              child: Text(
+                                _currentStep == 2 ? 'Finish' : 'Next',
+                                style: const TextStyle(color: primaryColor),
                               ),
                             ),
                           ],

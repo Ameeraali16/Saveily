@@ -11,6 +11,7 @@ final class AccountInitial extends AccountState {}
 
 class AccountLoading extends AccountState {}
 
+// ignore: must_be_immutable
 class AccountLoaded extends AccountState {
  
  Map<String, dynamic>account; //return all account info in a list

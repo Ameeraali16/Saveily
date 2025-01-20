@@ -1,26 +1,16 @@
-import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:saveily_2/bloc/account_bloc.dart';
 import 'package:saveily_2/functions/functions.dart';
-import 'package:saveily_2/models/transactionModel.dart';
 import 'package:saveily_2/screens/home/addexpense.dart';
 import 'package:saveily_2/screens/home/analytics.dart';
 import 'package:saveily_2/screens/home/userprofile.dart';
 import 'package:saveily_2/screens/home/userslist.dart';
 import 'package:saveily_2/theme/color.dart';
 
-void main() {
-  runApp(
-    const MaterialApp(
-      home: MainScreen(),
-      debugShowCheckedModeBanner: false,
-    ),
-  );
-}
 
-// MainScreen
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -37,97 +27,101 @@ class _MainScreenState extends State<MainScreen> {
    @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Trigger loading account data each time this page is visited
+   
     context.read<AccountBloc>().add(LoadAccount());
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: bgColor, // Ensure bgColor is defined
-      body: SafeArea(
-        child: BlocBuilder<AccountBloc, AccountState>(
-          builder: (context, state) {
-            if (state is AccountInitial) {
-              context.read<AccountBloc>().add(LoadAccount());
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-
-            if (state is AccountLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-
-            if (state is AccountLoaded) {
-              final String userName = state.user['firstName'] ?? 'No name'; // Default value
-      final String profileImageUrl = state.user['profileImageUrl'] ?? ''; // Default empty string
-
-
-      final String balance = state.account['balance'] ?? '';
-       final String income = state.account['income'] ?? '';
-     final List<Map<String, dynamic>> expenses = List<Map<String, dynamic>>.from(state.account['expenses'] ?? []);
-     final String updatedBalance =  calculateUpdatedBalance(balance, expenses);
-
-        final String totalExpense = calculateTotalExpense( expenses);
-        
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 25.0,
-                  vertical: 10.0,
-                ),
-                child: Column(
-                  children: [
-                    UserProfileSection(
-                       userName: userName,
-        profileImageUrl: profileImageUrl,
-                    ),
-
-                 
-                    const SizedBox(height: 20),
-                    BalanceCard(
-                      balance : updatedBalance ,
-                      income: income,
-                      exp : totalExpense
-                    ),
-                    const SizedBox(height: 40),
-                    TransactionsSection(expenses : expenses),
-                  ],
-                ),
-              );
-            }
-
-              if( state is AccountError){
-                  print("Account error: ${state.error}");
-      
-                return Center(child: Text('Error: Bloc error'),);
+    return 
+      Scaffold(
+        backgroundColor: bgColor,
+        body: SafeArea(
+          child: BlocBuilder<AccountBloc, AccountState>(
+            builder: (context, state) {
+              if (state is AccountInitial) {
+                context.read<AccountBloc>().add(LoadAccount());
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
               }
-
-            return const Center(
-              child: Text("Unexpected State"), // Fallback UI
+      
+              if (state is AccountLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+      
+              if (state is AccountLoaded) {
+                final String userName = state.user['firstName'] ?? 'No name'; 
+        final String profileImageUrl = state.user['profileImageUrl'] ?? ''; 
+      
+      
+        final String balance = state.account['balance'] ?? '';
+         final String income = state.account['income'] ?? '';
+       final List<Map<String, dynamic>> expenses = List<Map<String, dynamic>>.from(state.account['expenses'] ?? []);
+       final String updatedBalance =  calculateUpdatedBalance(balance, expenses);
+      
+          final String totalExpense = calculateTotalExpense( expenses);
+          
+                return SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 25.0,
+                      vertical: 10.0,
+                    ),
+                    child: Column(
+                      children: [
+                        UserProfileSection(
+                           userName: userName,
+                            profileImageUrl: profileImageUrl,
+                        ),
+                        
+                     
+                        const SizedBox(height: 20),
+                        BalanceCard(
+                          balance : updatedBalance ,
+                          income: income,
+                          exp : totalExpense
+                        ),
+                        const SizedBox(height: 40),
+                        TransactionsSection(expenses : expenses),
+                      ],
+                    ),
+                  ),
+                );
+              }
+      
+                if( state is AccountError){
+                    print("Account error: ${state.error}");
+        
+                  return const Center(child: Text('Error: Bloc error'),);
+                }
+      
+              return const Center(
+                child: Text("Unexpected State"), // Fallback UI
+              );
+            },
+          ),
+        ),
+        bottomNavigationBar: CustomBottomNavigationBar(
+          currentIndex: currentIndex,
+          onItemSelected: (index) {
+            setState(() {
+              currentIndex = index;
+            });
+          },
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: CustomFloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const Addexpense()),
             );
           },
         ),
-      ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: currentIndex,
-        onItemSelected: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: CustomFloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const Addexpense()),
-          );
-        },
-      ),
+    
     );
   }
 }
@@ -161,7 +155,7 @@ class UserProfileSection extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          UserProfile(), 
+                          const UserProfile(), 
                     ),
                   );
                 },
@@ -195,7 +189,7 @@ class UserProfileSection extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       "Welcome!",
                       style: TextStyle(
                         fontSize: 12,
@@ -206,7 +200,7 @@ class UserProfileSection extends StatelessWidget {
                     ),
                     Text(
                      userName,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: TextColor,
@@ -225,7 +219,7 @@ class UserProfileSection extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) =>
-                    UserListScreen(), // Replace with your actual page
+                    const UserListScreen(), 
               ),
             );
           },
@@ -258,7 +252,12 @@ class BalanceCard extends StatelessWidget {
       width: double.infinity,
       height: 200,
       decoration: BoxDecoration(
-        color: primaryColor,
+        gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [primaryColor, Colors.blue], 
+      ),
+      //  color: color2,
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
@@ -271,7 +270,7 @@ class BalanceCard extends StatelessWidget {
       child:  Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
+          const Text(
             'Total Balance',
             style: TextStyle(
               fontSize: 16,
@@ -279,19 +278,19 @@ class BalanceCard extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
 
           //BALANCE
           Text(
             'PKR $balance',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 40,
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -378,43 +377,96 @@ class TransactionsSection extends StatelessWidget {
   const TransactionsSection({
     super.key,
     required this.expenses,
-  
   });
 
   @override
   Widget build(BuildContext context) {
-   
-
-    return Expanded(
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Transactions',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                ),
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Transactions',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
               ),
-              GestureDetector(
-                onTap: () {
-                  // Add View All action
-                },
-                child: Text(
-                  'View All',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w400,
+            ),
+           TextButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                   ),
+                  builder: (context) => TransactionListModal(expenses: expenses),
+                );
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: TextColor,
+              ),
+              child: const Text(
+                'View All',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+      
+        SizedBox(
+          height: 300, 
+          child: ListView.builder(
+            physics: const BouncingScrollPhysics(),
+            itemCount: expenses.length,
+            itemBuilder: (context, i) {
+              return TransactionItem(expense: expenses[i], index: i);
+            },
           ),
-          const SizedBox(height: 20),
+        ),
+      ],
+    );
+  }
+}
+
+class TransactionListModal extends StatelessWidget {
+  final List<Map<String, dynamic>> expenses;
+
+  const TransactionListModal({
+    super.key,
+    required this.expenses,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 5,
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          const Text(
+            'All Transactions',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
           Expanded(
             child: ListView.builder(
               physics: const BouncingScrollPhysics(),
@@ -430,6 +482,7 @@ class TransactionsSection extends StatelessWidget {
   }
 }
 
+
 class TransactionItem extends StatelessWidget {
  final Map<String, dynamic> expense;
   final int index;
@@ -442,16 +495,20 @@ class TransactionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     // Extracting the relevant data from the Map
-    final String expenseName = expense['expense'] ?? 'No Expense'; // Ensure it's a String
-    final String category = expense['category'] ?? 'Uncategorized'; // Ensure it's a String
+   
+    final String expenseName = expense['expense'] ?? 'No Expense'; 
+    final String category = expense['category'] ?? 'Uncategorized'; 
     final String email = expense['userEmail'] ?? 'unknown';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [primaryColor, Colors.blue], 
+      ),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -474,12 +531,12 @@ class TransactionItem extends StatelessWidget {
                       width: 50,
                       height: 50,
                       decoration: const BoxDecoration(
-                        color: Colors.grey,
+                        color: Colors.white,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         CupertinoIcons.money_dollar_circle,
-                        color: Colors.white,
+                        color:primaryColor,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -488,7 +545,7 @@ class TransactionItem extends StatelessWidget {
                         category,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Colors.black,
+                          color:  Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -501,19 +558,19 @@ class TransactionItem extends StatelessWidget {
                  "\pkr${expenseName}.00",
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey.shade600,
+                  color: Colors.white,
                   fontWeight: FontWeight.w400,
                 ),
               ),
-              SizedBox(
+              const SizedBox(
 width: 15,
               ),
-              // Below is the email text section to display under the category (or where appropriate):
+             
 Text(
   "By $email",
   style: TextStyle(
     fontSize: 12,
-    color: Colors.grey.shade600,
+    color:  Colors.white,
     fontWeight: FontWeight.w400,
   ),
 ),
@@ -554,7 +611,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
             // Navigate to the Analytics Page
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => Analytics()),
+              MaterialPageRoute(builder: (context) => const Analytics()),
             );
           }
         },
@@ -594,7 +651,7 @@ class CustomFloatingActionButton extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => Addexpense(), // Replace with your actual page
+            builder: (context) => const Addexpense(), 
           ),
         );
       },

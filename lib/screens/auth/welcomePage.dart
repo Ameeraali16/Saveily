@@ -21,72 +21,51 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
 
-Future<void> handleGoogleSignIn(BuildContext context) async {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com', // Add this for web
-    scopes: [
-      'email',
-      'https://www.googleapis.com/auth/userinfo.profile',
-      'https://www.googleapis.com/auth/contacts.readonly', // People API scope
-    ],
-  );
+  Future<void> handleGoogleSignIn(BuildContext context) async {
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    final GoogleSignIn _googleSignIn = GoogleSignIn(
+      scopes: [
+        'email',
+      ],
+    );
 
-  try {
-    // Initialize gapi for web if needed
-    if (kIsWeb) {
-      await window.gapi?.load('auth2', () {});
-    }
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser != null) {
+        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
-    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-    if (googleUser != null) {
-      // Get user details if needed
-      // final googleEmail = googleUser.email;
-      // final googleDisplayName = googleUser.displayName;
-      // final googlePhotoUrl = googleUser.photoUrl;
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+        final UserCredential userCredential = await _auth.signInWithCredential(credential);
+        final User? user = userCredential.user;
 
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      final UserCredential userCredential =
-          await _auth.signInWithCredential(credential);
-      final User? user = userCredential.user;
-
-      if (user != null) {
-        // Check if the user is signing in for the first time
-        final additionalInfo = userCredential.additionalUserInfo;
-        if (additionalInfo != null && additionalInfo.isNewUser) {
-          // Navigate to FormPage if first-time sign-in
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => FormScreen()),
-          );
-        } else {
-          // Navigate to MainScreen if already signed in before
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => MainScreen()),
-          );
+        if (user != null) {
+          final additionalInfo = userCredential.additionalUserInfo;
+          if (additionalInfo != null && additionalInfo.isNewUser) {
+            // Navigate to profile screen if first-time user
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => FormScreen()),
+            );
+          } else {
+            // Navigate to main screen if returning user
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MainScreen()),
+            );
+          }
         }
       }
+    } catch (e) {
+      print("Error during Google Sign-In: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Google Sign-In failed: $e')),
+      );
     }
-  } catch (e) {
-    print("Error during Google Sign-In: $e");
-    // More detailed error handling
-    String errorMessage = 'Google Sign-In failed';
-    if (e.toString().contains('People API has not been used')) {
-      errorMessage = 'Please wait a few minutes and try again. The API is being activated.';
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(errorMessage)),
-    );
   }
-}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,7 +75,7 @@ Future<void> handleGoogleSignIn(BuildContext context) async {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              ImageFlipper(), // This should now be visible if the ImageFlipper works properly
+              ImageFlipper(), 
               const SizedBox(height: 30),
               Container(
                 padding: const EdgeInsets.all(20),
@@ -107,10 +86,10 @@ Future<void> handleGoogleSignIn(BuildContext context) async {
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black
-                            .withOpacity(0.1), // Shadow color with opacity
-                        spreadRadius: 2, // How much the shadow spreads
-                        blurRadius: 5, // How blurry the shadow is
-                        offset: Offset(0, 4), // The shadow's position (x, y)
+                            .withOpacity(0.1), 
+                        spreadRadius: 2, 
+                        blurRadius: 5, 
+                        offset: Offset(0, 4),
                       ),
                     ]),
                 child: Column(

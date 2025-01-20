@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:saveily_2/bloc/FormBloc.dart';
 import 'package:saveily_2/bloc/account_bloc.dart';
 import 'package:saveily_2/firebase_options.dart';
 import 'package:saveily_2/screens/auth/welcomePage.dart';
@@ -18,13 +21,29 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AccountBloc(), // Provide the AccountBloc here
+     return MultiBlocProvider(
+    providers: [
+      BlocProvider<AccountBloc>(
+        create: (context) => AccountBloc(),
+      ),
+      BlocProvider<ProfileFormBloc>(
+        create: (context) => ProfileFormBloc(
+          auth: FirebaseAuth.instance,
+          firestore: FirebaseFirestore.instance,
+        ),
+      ),
+    ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: "Saveily",
         theme: ThemeData(
-          fontFamily: 'Roboto',
+          fontFamily: 'Roboto',  // Applying Roboto font globally
+      textTheme: TextTheme(
+        bodyLarge: TextStyle(fontFamily: 'Roboto'),
+        bodyMedium: TextStyle(fontFamily: 'Roboto'),
+        titleLarge: TextStyle(fontFamily: 'Roboto'),
+        titleMedium: TextStyle(fontFamily: 'Roboto'),
+      ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryColor,

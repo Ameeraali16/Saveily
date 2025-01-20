@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "515560094088-cihr0m8nc7pqd7d34gf24j2al74rt7t9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.savily.app",
+            "certificate_hash": "40a880fd23305a4f5cdc3fb37bdbb17a952c930a"
+          }
+        },
+        {
           "client_id": "515560094088-1mtj9pca323fjsktnvsd8l6qq4p7vsqc.apps.googleusercontent.com",
           "client_type": 3
         }
